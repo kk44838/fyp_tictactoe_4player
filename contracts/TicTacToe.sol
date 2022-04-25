@@ -6,6 +6,12 @@ pragma solidity ^0.4.24;
  **/
 contract TicTacToe {
     address[2] public players;
+    address[2] public playersJoined;
+    
+    /**
+      Amount to bet
+     */
+    uint256 public betAmount;
 
     /**
      turn
@@ -20,6 +26,7 @@ contract TicTacToe {
      1 - players[0] won
      2 - players[1] won
      3 - draw
+     4 - Not started
      */
     uint public status;
 
@@ -42,8 +49,12 @@ contract TicTacToe {
       **/
     constructor(address opponent) public {
         require(msg.sender != opponent, "No self play.");
-        players = [msg.sender, opponent];
+        // require(msg.value <= msg.sender.balance, "Player 1 insufficient balance.");
+        // require(msg.value <= opponent.balance, "Player 2 insufficient balance.");
 
+        players[0] = msg.sender;
+        players[1] = opponent;
+        
 
         /**
           Fill up lines mapping
@@ -58,8 +69,27 @@ contract TicTacToe {
         lines[6] = [[6,7,8],[0,3,6],[2,4,6]];
         lines[7] = [[6,7,8],[1,4,7]];
         lines[8] = [[6,7,8],[2,5,8],[0,4,8]];
-
     }
+
+    modifier _hasJoined(address sender) {
+      require((sender == players[0] && playersJoined[0] == address(0)) || (sender == players[1] && playersJoined[1] == address(0)), "Already Joined");
+      _;
+    }
+
+    function join() external payable _hasJoined(msg.sender) {
+        
+        if (msg.sender == players[0]){
+          playersJoined[0] = msg.sender;
+          betAmount = msg.value;
+        }
+
+        if (msg.sender == players[1]) {
+          require(msg.value == betAmount, "Wrong bet amount.");
+          playersJoined[1] = msg.sender;
+        }
+        
+    }
+
 
     /**
       * @dev Check a, b, c in a line are the same
@@ -81,16 +111,21 @@ contract TicTacToe {
      */
     function _getStatus(uint pos) private view returns (uint) {
         /*Please complete the code here.*/
+        for (uint i=0; i < playersJoined.length; i++) {
+          if (playersJoined[i] == 0){
+            return 4;
+          }
+        }
 
-        for (uint i=0; i < lines[pos].length; i++) {
-          if (_threeInALine(lines[pos][i][0], lines[pos][i][1], lines[pos][i][2])){
+        for (uint j=0; j < lines[pos].length; j++) {
+          if (_threeInALine(lines[pos][j][0], lines[pos][j][1], lines[pos][j][2])){
              return board[pos];
           }
         }
 
 
-        for (uint j=0; j < board.length; j++) {
-          if (board[j] == 0) {
+        for (uint k=0; k < board.length; k++) {
+          if (board[k] == 0) {
             return 0;
           }
         }
@@ -167,4 +202,6 @@ contract TicTacToe {
     function showBoard() public view returns (uint[9]) {
       return board;
     }
+
 }
+

@@ -6,6 +6,7 @@ var turnDisplay = document.getElementById('whos-turn');
 var gameMessages = document.getElementById('game-messages');
 var newGame = document.getElementById('new-game');
 var joinGame = document.getElementById('join-game');
+// var startGame;
 var player;
 var gameOver = false;
 
@@ -30,11 +31,11 @@ var init = async function() {
 
     await ethereum.request({ method: 'eth_requestAccounts' });
 
-    TicTacToeContract = eth.contract(abi, byteCode, { from: ethereum.selectedAddress, gas: '3000000' });
+    TicTacToeContract = eth.contract(abi, byteCode, { from: ethereum.selectedAddress, gasPrice: 1, gas: '30000000' });
 
     ethereum.on('accountsChanged', async function (accounts) {
         await ethereum.request({ method: 'eth_requestAccounts' });
-        TicTacToeContract = eth.contract(abi, byteCode, { from: ethereum.selectedAddress, gas: '3000000' });
+        TicTacToeContract = eth.contract(abi, byteCode, { from: ethereum.selectedAddress, gasPrice: 1, gas: '30000000' });
     });
     
     //the user can first create or join a game
@@ -122,27 +123,69 @@ var newGameHandler = function(){
     } else{
         var opponentAddress = document.getElementById('opponentAdress').value
         console.log(opponentAddress)
-        TicTacToeContract.new(opponentAddress).then(function(txHash){   
-            var contractAddress;
+        TicTacToeContract.new(opponentAddress)
+        .then(function(txHash) {
             var waitForTransaction = setInterval(function(){
                 eth.getTransactionReceipt(txHash, function(err, receipt){
                     if (receipt) {
                         clearInterval(waitForTransaction);
                         TicTacToe = TicTacToeContract.at(receipt.contractAddress);
                         //display the contract address to share with the opponent
-                        document.querySelector('#newGameAddress').innerHTML = 
-                            "Share the contract address with your opponnent: " + String(receipt.contractAddress) + "<br><br>";
-                        document.querySelector('#player').innerHTML ="Player1"
-                        player = 1;
+                        document.querySelector('#betAmountField').innerHTML = 
+                    "<input type=\"text\" id=\"betAmount\" placeholder=\"Place Your Bet\"></input><button id=\"start-game\" onclick=\"startGameHandler()\">Place Bet</button> <br><br>";
                     }
                 })
             }, 300);
+        
         })
+        
     }
 }
 
-var joinGameHandler = function(){
+var startGameHandler = function(){
 
+    if (typeof TicTacToe != 'undefined'){
+        var betAmount = document.getElementById('betAmount')
+        if (!betAmount) {
+            betAmount = 1
+        } else {
+            betAmount = betAmount.value
+        }
+        console.log(betAmount)
+        // console.log(TicTacToeContract.defaultAccount)
+
+            // TicTacToe.start().send({
+        //     // from: TicTacToeContract.defaultAccount,
+        //     // value: web3.utils.toWei(betAmount, 'ether')
+        //     from: '0x95547Be3f076b29504e36D5b2dd3e10810e9E6BC',
+        //     value: web3.toWei(12, 'ether')
+        // })
+        TicTacToe.join().send({from: TicTacToe.defaultAccount, value:web3.utils.toWei(0.01, "ether")})
+        then(res => 
+            console.log('Success', res))
+        .catch(err => console.log(err)) 
+        // .then(function(txHash){   
+        //     // var contractAddress;
+        //     var waitForTransaction = setInterval(function(){
+        //         eth.getTransactionReceipt(txHash, function(err, receipt){
+        //             if (receipt) {
+        //                 clearInterval(waitForTransaction);
+        //                 //display the contract address to share with the opponent
+        //                 document.querySelector('#newGameAddress').innerHTML = 
+        //                     "Share the contract address with your opponnent: " + String(receipt.contractAddress) + "<br><br>";
+        //                 document.querySelector('#player').innerHTML ="Player1"
+        //                 player = 1;
+        //             }
+        //         })
+        //     }, 300);
+        // })
+    } else {
+        console.log("There doesn't seem to be an existing game going on already");
+    }
+    
+}
+
+var joinGameHandler = function(){
     //idem for joining a game
     var contractAddress = document.getElementById('contract-ID-tojoin').value.trim();
     TicTacToe = TicTacToeContract.at(contractAddress);
