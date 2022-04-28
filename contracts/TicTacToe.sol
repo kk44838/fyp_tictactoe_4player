@@ -28,7 +28,8 @@ contract TicTacToe {
      3 - draw
      4 - Not started
      */
-    uint public status;
+    uint public status = 4;
+    bool private paidWinner = false;
 
     /**
     board status
@@ -86,6 +87,7 @@ contract TicTacToe {
         if (msg.sender == players[1]) {
           require(msg.value == betAmount, "Wrong bet amount.");
           playersJoined[1] = msg.sender;
+          status = 0;
         }
         
     }
@@ -104,6 +106,13 @@ contract TicTacToe {
 
     }
 
+    modifier _allJoined() {
+      for (uint i=0; i < playersJoined.length; i++) {
+        require((players[0] != address(0) && playersJoined[0] == players[0]));
+      }
+      _;
+    }
+
     /**
      * @dev get the status of the game
      * @param pos the position the player places at
@@ -111,15 +120,10 @@ contract TicTacToe {
      */
     function _getStatus(uint pos) private view returns (uint) {
         /*Please complete the code here.*/
-        for (uint i=0; i < playersJoined.length; i++) {
-          if (playersJoined[i] == 0){
-            return 4;
-          }
-        }
 
         for (uint j=0; j < lines[pos].length; j++) {
           if (_threeInALine(lines[pos][j][0], lines[pos][j][1], lines[pos][j][2])){
-             return board[pos];
+            return board[pos];
           }
         }
 
@@ -143,6 +147,10 @@ contract TicTacToe {
         require(status == 0, "Game is Complete.");
         _;
         status = _getStatus(pos);
+        if (status > 0 && status < 3 && !paidWinner) {
+          paidWinner = true;
+          payWinner();
+        }
     }
 
     /**
@@ -191,7 +199,7 @@ contract TicTacToe {
      * @dev a player makes a move
      * @param pos the position the player places at
      */
-    function move(uint pos) public _validMove(pos) _checkStatus(pos) _myTurn {
+    function move(uint pos) public _allJoined _validMove(pos) _checkStatus(pos) _myTurn {
         board[pos] = turn;
     }
 
@@ -203,5 +211,9 @@ contract TicTacToe {
       return board;
     }
 
+
+    function payWinner() private {
+      players[status - 1].transfer(betAmount + betAmount);
+    }
 }
 

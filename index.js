@@ -3,6 +3,7 @@
 var game = document.getElementById('game');
 var boxes = document.querySelectorAll('li');
 var turnDisplay = document.getElementById('whos-turn');
+var statusDisplay = document.getElementById('game-status');
 var gameMessages = document.getElementById('game-messages');
 var newGame = document.getElementById('new-game');
 var joinGame = document.getElementById('join-game');
@@ -60,12 +61,13 @@ var checkWin = function(){
             win = res[0].words[0];
             console.log(win)
             var displayResult;
-            if (win>0){
+            statusDisplay.innerHTML = "Status: " + win
+            if (win>0 && win<4){
                 if (win==3){
                     displayResult = "Draw ! game is over";
                 } else if (win == 2){
                     displayResult = "Player 2 wins ! game is over";
-                } else if (win ==1) {
+                } else if (win == 1) {
                     displayResult = "Player 1 wins ! game is over";
                 }
                 gameOver = true;
@@ -73,9 +75,11 @@ var checkWin = function(){
                 for (var i = 0; i < 9; i++){
                     boxes[i].removeEventListener('click', clickHandler);
                 }
+            } else if (win == 4){
+                document.querySelector('#game-messages').innerHTML = "Waiting for players...";
             }
         });
-        if (win>0){
+        if (win>0 && win<4){
             return true;
         } else {
             return false;
@@ -105,15 +109,24 @@ var render = function(){
         });
         checkWin();
         if (!gameOver){
-            TicTacToe.turn().then(function(res){
-                if (res[0].words[0] == player){
-                    document.querySelector('#game-messages').innerHTML = "Your turn !";
-                } else {
-                    document.querySelector('#game-messages').innerHTML = "Not your turn !";
-                }
+            turnMessageHandler();
+        } else {
+            TicTacToe.paidWinner().then(function(res){
+                document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0].words[0];
             });
-        }   
+        }
     }
+}
+
+var turnMessageHandler = function(){
+    TicTacToe.turn().then(function(res){
+        turnDisplay.innerHTML = "Player Turn: " + res[0].words[0]
+        if (res[0].words[0] == player){
+            document.querySelector('#game-messages').innerHTML = "Your turn !";
+        } else {
+            document.querySelector('#game-messages').innerHTML = "Not your turn !";
+        }
+    });
 }
 
 var newGameHandler = function(){
@@ -147,23 +160,39 @@ var newGameHandler = function(){
 var startGameHandler = async function(){
 
     if (typeof TicTacToe != 'undefined'){
-        var betAmount = document.getElementById('betAmount')
+        var betAmount = document.getElementById('betAmount');
         if (!betAmount) {
-            betAmount = 1
+            betAmount = 1;
         } else {
-            betAmount = betAmount.value
+            betAmount = betAmount.value;
         }
-        console.log(betAmount)
+        console.log(betAmount);
 
         // await ethereum.request({ method: 'eth_requestAccounts' });
         // const signer = provider.getSigner();
         // await signer;
         // await contract.connect(signer).deposit(/*arguments*/, {value: ethdeposit});
         // { from: accounts[0], gas: '3000000',  value: web3.utils.toWei(1, "ether")}
-        await TicTacToe.join().send().then(receipt=> {console.log(receipt)}).then(function() {
-                document.querySelector('#betAmountField').innerHTML = 
-                "<input type=\"text\" id=\"betAmount\" placeholder=\"BET PLACED\"></input><button id=\"start-game\" onclick=\"() => startGameHandler()\">BET PLACED</button> <br><br>";
-            });
+
+
+        /* I need to make the bet amount the value of the join function call it is not working right now*/
+        TicTacToe.join().then(function(txHash) {
+            var waitForTransaction = setInterval(function(){
+                eth.getTransactionReceipt(txHash, function(err, receipt){
+                    if (receipt) {
+                        clearInterval(waitForTransaction);
+                        //display the contract address to share with the opponent
+
+                        document.querySelector('#betAmountField').innerHTML +=  
+                            "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
+                            + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
+                        document.querySelector('#player').innerHTML ="Player1"
+                        player = 1;
+                    }
+                })
+            }, 300);
+        
+        })
 
         // TicTacToe.join({ from: ethereum.selectedAddress, gas: '3000000',  value: web3.utils.toWei(1, "ether")}, function(err, res){ });
         
@@ -205,7 +234,8 @@ var joinGameHandler = function(){
     //idem for joining a game
     var contractAddress = document.getElementById('contract-ID-tojoin').value.trim();
     TicTacToe = TicTacToeContract.at(contractAddress);
-    document.querySelector('#player').innerHTML ="Player2"
+    TicTacToe.join();
+    document.querySelector('#player').innerHTML = "Player2";
     player = 2;
 }
 
@@ -223,7 +253,7 @@ var clickHandler = function() {
                 TicTacToe.turn().then(function(res) {
                     if (res[0].words[0] == player) {
                         TicTacToe.move(target).catch(function(err){
-                            console.log('something went wrong ' +String(err));
+                            console.log('something went wrong ' + String(err));
                         }).then(function(res){
                             this.removeEventListener('click', clickHandler);
                             render();
