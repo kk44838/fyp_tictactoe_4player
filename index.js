@@ -9,6 +9,7 @@ var joinGame = document.getElementById('join-game');
 // var startGame;
 var player;
 var gameOver = false;
+var accounts;
 
 
 if (typeof web3 !== 'undefined') {
@@ -29,13 +30,13 @@ var init = async function() {
     const abi = data.abi
     const byteCode = data.bytecode
 
-    await ethereum.request({ method: 'eth_requestAccounts' });
+    accounts = await ethereum.request({ method: 'eth_requestAccounts' });
 
-    TicTacToeContract = eth.contract(abi, byteCode, { from: ethereum.selectedAddress, gasPrice: 1, gas: '30000000' });
+    TicTacToeContract = eth.contract(abi, byteCode, { from: accounts[0], gas: '3000000' });
 
     ethereum.on('accountsChanged', async function (accounts) {
-        await ethereum.request({ method: 'eth_requestAccounts' });
-        TicTacToeContract = eth.contract(abi, byteCode, { from: ethereum.selectedAddress, gasPrice: 1, gas: '30000000' });
+        accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        TicTacToeContract = eth.contract(abi, byteCode, { from: accounts[0], gas: '3000000' });
     });
     
     //the user can first create or join a game
@@ -131,6 +132,7 @@ var newGameHandler = function(){
                         clearInterval(waitForTransaction);
                         TicTacToe = TicTacToeContract.at(receipt.contractAddress);
                         //display the contract address to share with the opponent
+
                         document.querySelector('#betAmountField').innerHTML = 
                     "<input type=\"text\" id=\"betAmount\" placeholder=\"Place Your Bet\"></input><button id=\"start-game\" onclick=\"startGameHandler()\">Place Bet</button> <br><br>";
                     }
@@ -142,7 +144,7 @@ var newGameHandler = function(){
     }
 }
 
-var startGameHandler = function(){
+var startGameHandler = async function(){
 
     if (typeof TicTacToe != 'undefined'){
         var betAmount = document.getElementById('betAmount')
@@ -152,18 +154,32 @@ var startGameHandler = function(){
             betAmount = betAmount.value
         }
         console.log(betAmount)
-        // console.log(TicTacToeContract.defaultAccount)
 
-            // TicTacToe.start().send({
-        //     // from: TicTacToeContract.defaultAccount,
-        //     // value: web3.utils.toWei(betAmount, 'ether')
-        //     from: '0x95547Be3f076b29504e36D5b2dd3e10810e9E6BC',
-        //     value: web3.toWei(12, 'ether')
-        // })
-        TicTacToe.join().send({from: TicTacToe.defaultAccount, value:web3.utils.toWei(0.01, "ether")})
-        then(res => 
-            console.log('Success', res))
-        .catch(err => console.log(err)) 
+        // await ethereum.request({ method: 'eth_requestAccounts' });
+        // const signer = provider.getSigner();
+        // await signer;
+        // await contract.connect(signer).deposit(/*arguments*/, {value: ethdeposit});
+        // { from: accounts[0], gas: '3000000',  value: web3.utils.toWei(1, "ether")}
+        await TicTacToe.join().send().then(receipt=> {console.log(receipt)}).then(function() {
+                document.querySelector('#betAmountField').innerHTML = 
+                "<input type=\"text\" id=\"betAmount\" placeholder=\"BET PLACED\"></input><button id=\"start-game\" onclick=\"() => startGameHandler()\">BET PLACED</button> <br><br>";
+            });
+
+        // TicTacToe.join({ from: ethereum.selectedAddress, gas: '3000000',  value: web3.utils.toWei(1, "ether")}, function(err, res){ });
+        
+
+
+        // await ethereum.request({ method: 'eth_accounts' }).then(function (accounts) {
+        //     TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(1, "ether")}, function(err, res){ });
+        // }).then(function() {
+        //     document.querySelector('#betAmountField').innerHTML = 
+        //     "<input type=\"text\" id=\"betAmount\" placeholder=\"BET PLACED\"></input><button id=\"start-game\" onclick=\"() => startGameHandler()\">BET PLACED</button> <br><br>";
+        //     }
+        // )
+        
+        // .then(res => 
+        //     console.log('Success', res))
+        // .catch(err => console.log(err)) 
         // .then(function(txHash){   
         //     // var contractAddress;
         //     var waitForTransaction = setInterval(function(){
