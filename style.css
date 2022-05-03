@@ -15,19 +15,29 @@ h1 {
 }
 .container {
     margin: 0 auto;
-    width: 400px;
+    width: 100%;
+    overflow: auto;
 }
 
-#game {
+#games {
+    width: 90%; 
+    display: grid; 
+    /* grid-template-columns: 1fr 1fr 1fr 1fr;  */
+    grid-template-columns: 1fr; 
+    place-items: center;
+    grid-gap: 20px; 
+}
+
+.game {
     width: 300px;
     height: 300px;
     border: 1px solid #dadada;
-    margin: 0 auto;
+    margin: 10px;
     padding: 0;
     margin-bottom: 20px;
 }
 
-#game > li {
+.game > li {
     list-style: none;
     float: left;
     overflow: hidden;
@@ -45,21 +55,21 @@ h1 {
     box-sizing: border-box;
 }
 
-#game > li.x {
+.game > li.x {
     font-size: 40px;
     color: #ed4e6e
 }
 
-#game > li.o {
+.game > li.o {
     font-size: 40px;
     color: #485b6e;
 }
 
-#game > li:hover {
+.game > li:hover {
     background: #f9f9f9;
 }
 
-#game > li:active {
+.game > li:active {
     width: 100px;
     height: 100px;
     border: 0;

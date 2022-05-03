@@ -31,23 +31,25 @@
         <input type="text" id="contract-ID-tojoin" placeholder="Contract Address"></input>
         <button id="join-game">Join Game</button>
 
+    
         <div class="container">
             <h1>Tic-Tac-Toe <div id="player"></div> </h1>
-            <ul id="game">
-                <!-- first row -->
-                <li data-pos-x="0" data-pos-y="0"></li>
-                <li data-pos-x="0" data-pos-y="1"></li>
-                <li data-pos-x="0" data-pos-y="2"></li>
-                <!-- second row -->
-                <li data-pos-x="1" data-pos-y="0"></li>
-                <li data-pos-x="1" data-pos-y="1"></li>
-                <li data-pos-x="1" data-pos-y="2"></li>
-                <!-- third row -->
-                <li data-pos-x="2" data-pos-y="0"></li>
-                <li data-pos-x="2" data-pos-y="1"></li> 
-                <li data-pos-x="2" data-pos-y="2"></li>
-            </ul>
-            
+            <span id="games">
+                <ul class="game" id="game1">
+                    <!-- first row -->
+                    <li data-pos-x="0" data-pos-y="0"></li>
+                    <li data-pos-x="0" data-pos-y="1"></li>
+                    <li data-pos-x="0" data-pos-y="2"></li>
+                    <!-- second row -->
+                    <li data-pos-x="1" data-pos-y="0"></li>
+                    <li data-pos-x="1" data-pos-y="1"></li>
+                    <li data-pos-x="1" data-pos-y="2"></li>
+                    <!-- third row -->
+                    <li data-pos-x="2" data-pos-y="0"></li>
+                    <li data-pos-x="2" data-pos-y="1"></li> 
+                    <li data-pos-x="2" data-pos-y="2"></li>
+                </ul>
+            </span>
             <!-- Game Messages -->
             <div id="game-messages"></div>
             <div id="winner-paid"></div>
@@ -57,6 +59,7 @@
                 
             </aside>
         </div>
+
     </body>
 </html>
   
