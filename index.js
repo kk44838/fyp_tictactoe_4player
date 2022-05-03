@@ -94,17 +94,20 @@ var render = function(){
     //renders the board byt fetching the state of the board from the blockchain
     if (typeof TicTacToe != 'undefined'){
         TicTacToe.showBoard().then(function(res){
-            for (var i = 0; i < 9; i++){
-                var state = res[0][i].words[0];
-                if (state>0){
-                    if (state==1){
-                        boxes[i].className = 'x';
-                        boxes[i].innerHTML = 'x';
-                    } else{
-                        boxes[i].className = 'o';
-                        boxes[i].innerHTML = 'o';
+            for (var i = 0; i < 3; i++){
+                for (var j = 0; j < 3; j++){
+                    var state = res[0][i][j].words[0];
+                    if (state>0){
+                        var box_i = 3*i + j;
+                        if (state==1){
+                            boxes[box_i].className = 'x';
+                            boxes[box_i].innerHTML = 'x';
+                        } else{
+                            boxes[box_i].className = 'o';
+                            boxes[box_i].innerHTML = 'o';
+                        }
                     }
-                }
+                }   
             }
         });
         checkWin();
@@ -247,12 +250,13 @@ var clickHandler = function() {
         if (checkWin()){
             return;
         }
-        var target = this.getAttribute('data-pos');
-        TicTacToe.validMove(target).then(function(res){
+        var target_x = this.getAttribute('data-pos-x');
+        var target_y = this.getAttribute('data-pos-y');
+        TicTacToe.validMove(target_x, target_y).then(function(res){
             if (res[0]) {
                 TicTacToe.turn().then(function(res) {
                     if (res[0].words[0] == player) {
-                        TicTacToe.move(target).catch(function(err){
+                        TicTacToe.move(target_x, target_y).catch(function(err){
                             console.log('something went wrong ' + String(err));
                         }).then(function(res){
                             this.removeEventListener('click', clickHandler);
