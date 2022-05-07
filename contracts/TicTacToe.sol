@@ -36,7 +36,7 @@ contract TicTacToe {
      3    4    5
      6    7    8
      */
-    uint[4][4] private board;
+    uint[4][4][4] private board;
 
     /**
       Mapping
@@ -100,53 +100,118 @@ contract TicTacToe {
     }
 
 
-    function winnerInRow(uint[4][4] memory _board) private pure returns (uint){
-      for (uint8 x = 0; x < _board.length; x++) {
-        if (_fourInALine(_board[x][0], _board[x][1], _board[x][2], _board[x][3])) {
-          return _board[x][0];
+    function winnerInRow() private view returns (uint){
+      for (uint8 x1 = 0; x1 < board.length; x1++) {
+        for (uint8 x2 = 0; x2 < board.length; x2++) {
+          if (_fourInALine(board[x2][0][x1], board[x2][1][x1], board[x2][2][x1], board[x2][3][x1])) {
+            return board[x2][0][x1];
+          }
+        } 
+      }
+      
+      return 0;
+    }
+
+    function winnerInColumn() private view returns (uint){
+      for (uint8 y1 = 0; y1 < board.length; y1++) {
+        for (uint8 y2 = 0; y2 < board.length; y2++) {
+          if (_fourInALine(board[0][y2][y1], board[1][y2][y1], board[2][y2][y1], board[3][y2][y1])) {
+            return board[0][y2][y1];
+          }
         }
       }
-
       return 0;
     }
 
-    function winnerInColumn(uint[4][4] memory _board) private pure returns (uint){
-      for (uint8 y = 0; y < _board.length; y++) {
-        if (_fourInALine(_board[0][y], _board[1][y], _board[2][y], _board[3][y])) {
-          return _board[0][y];
+    function winnerInDiagonal() private view returns (uint){
+      
+      for (uint8 z1 = 0; z1 < board.length; z1++) {
+        if (_fourInALine(board[0][0][z1], board[1][1][z1], board[2][2][z1], board[3][3][z1])) {
+          return board[0][0][z1];
+        }
+        
+        if (_fourInALine(board[0][3][z1], board[1][2][z1], board[2][1][z1], board[3][0][z1])) {
+          return board[0][3][z1];
         }
       }
-
       return 0;
     }
 
-    function winnerInDiagonal(uint[4][4] memory _board) private pure returns (uint){
-      
-      if (_fourInALine(_board[0][0], _board[1][1], _board[2][2], _board[3][3])) {
-        return _board[0][0];
+    function winnerInVertical() private view returns (uint){
+      for (uint8 a1 = 0; a1 < board.length; a1++) {
+        for (uint8 a2 = 0; a2 < board.length; a2++) {
+          if (_fourInALine(board[a1][a2][0], board[a1][a2][1], board[a1][a2][2], board[a1][a2][3])) {
+            return board[a1][a2][0];
+          
+          }
+        } 
       }
       
-      if (_fourInALine(_board[0][3], _board[1][2], _board[2][1], _board[3][0])) {
-        return _board[0][3];
-      }
-
       return 0;
     }
 
-    function fullBoard(uint[4][4] memory _board) private pure returns (bool){
+    function winnerInVerticalRow() private view returns (uint){
+      for (uint8 b1 = 0; b1 < board.length; b1++) {
+          if (_fourInALine(board[b1][0][0], board[b1][1][1], board[b1][2][2], board[b1][3][3])) {
+            return board[b1][0][0];
+          }
+
+          if (_fourInALine(board[b1][3][0], board[b1][2][1], board[b1][1][2], board[b1][0][3])) {
+            return board[b1][3][0];
+          }
+      }
       
-      for (uint j=0; j < _board.length; j++) {
-        for (uint k=0; k < _board.length; k++) {
-          if (_board[j][k] == 0) {
-            return false;
+      return 0;
+    }
+
+    function winnerInVerticalColumn() private view returns (uint){
+      for (uint8 c1 = 0; c1 < board.length; c1++) {
+          if (_fourInALine(board[0][c1][0], board[1][c1][1], board[2][c1][2], board[3][c1][3])) {
+            return board[c1][0][0];
+          }
+
+          if (_fourInALine(board[3][c1][0], board[2][c1][1], board[1][c1][2], board[0][c1][3])) {
+            return board[3][c1][0];
+          }
+      }
+      
+      return 0;
+    }
+
+    function winnerInVerticalDiagonal() private view returns (uint){
+      if (_fourInALine(board[0][0][0], board[1][1][1], board[2][2][2], board[3][3][3])) {
+        return board[0][0][0];
+      }
+
+      if (_fourInALine(board[0][0][3], board[1][1][2], board[2][2][1], board[3][3][0])) {
+        return board[0][0][3];
+      }
+      
+      if (_fourInALine(board[0][3][0], board[1][2][1], board[2][1][2], board[3][0][3])) {
+        return board[0][3][0];
+      }
+
+      if (_fourInALine(board[0][3][3], board[1][2][2], board[2][1][1], board[3][0][0])) {
+        return board[0][3][3];
+      }
+      
+      return 0;
+    }
+
+    function fullBoard() private view returns (bool){
+      
+      for (uint j=0; j < board.length; j++) {
+        for (uint k=0; k < board.length; k++) {
+          for (uint l=0; l < board.length; l++) {
+            if (board[j][k][l] == 0) {
+              return false;
+            }
           }
         }
       }
 
       return true;
     }
-
-
 
     /**
      * @dev get the status of the game
@@ -155,25 +220,49 @@ contract TicTacToe {
     function _getStatus() private view returns (uint) {
         /*Please complete the code here.*/
 
-        uint cur_status = winnerInRow(board);
+        uint cur_status = winnerInRow();
 
         if (cur_status > 0) {
           return cur_status;
         }
 
-        cur_status = winnerInColumn(board);
+        cur_status = winnerInColumn();
 
         if (cur_status > 0) {
           return cur_status;
         }
 
-        cur_status = winnerInDiagonal(board);
+        cur_status = winnerInDiagonal();
 
         if (cur_status > 0) {
           return cur_status;
         }
 
-        if (fullBoard(board)) {
+        cur_status = winnerInVertical();
+
+        if (cur_status > 0) {
+          return cur_status;
+        }
+
+        cur_status = winnerInVerticalRow();
+
+        if (cur_status > 0) {
+          return cur_status;
+        }
+
+        cur_status = winnerInVerticalColumn();
+
+        if (cur_status > 0) {
+          return cur_status;
+        }
+
+        cur_status = winnerInVerticalDiagonal();
+
+        if (cur_status > 0) {
+          return cur_status;
+        }
+
+        if (fullBoard()) {
           return 3;
         }
 
@@ -223,9 +312,9 @@ contract TicTacToe {
      * @param pos_y the position the player places at
      * @return true if valid otherwise false
      */
-    function validMove(uint pos_x, uint pos_y) public view returns (bool) {
+    function validMove(uint pos_x, uint pos_y, uint pos_z) public view returns (bool) {
       /*Please complete the code here.*/
-      return pos_x >= 0 && pos_x < 4 && pos_y >= 0 && pos_y < 4 && board[pos_x][pos_y] == 0;
+      return pos_x >= 0 && pos_x < 4 && pos_y >= 0 && pos_y < 4 && pos_z >= 0 && pos_z < 4 && board[pos_x][pos_y][pos_z] == 0;
 
     }
 
@@ -234,9 +323,9 @@ contract TicTacToe {
      * @param pos_x the position the player places at
      * @param pos_y the position the player places at
      */
-    modifier _validMove(uint pos_x, uint pos_y) {
+    modifier _validMove(uint pos_x, uint pos_y, uint pos_z) {
       /*Please complete the code here.*/
-      require (validMove(pos_x, pos_y), "Move is invalid.");
+      require (validMove(pos_x, pos_y, pos_z), "Move is invalid.");
       _;
     }
 
@@ -245,15 +334,15 @@ contract TicTacToe {
      * @param pos_x the position the player places at
      * @param pos_y the position the player places at
      */
-    function move(uint pos_x, uint pos_y) public _allJoined _validMove(pos_x, pos_y) _checkStatus _myTurn {
-        board[pos_x][pos_y] = turn;
+    function move(uint pos_x, uint pos_y, uint pos_z) public _allJoined _validMove(pos_x, pos_y, pos_z) _checkStatus _myTurn {
+        board[pos_x][pos_y][pos_z] = turn;
     }
 
     /**
      * @dev show the current board
      * @return board
      */
-    function showBoard() public view returns (uint[4][4]) {
+    function showBoard() public view returns (uint[4][4][4]) {
       return board;
     }
 

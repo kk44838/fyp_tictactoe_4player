@@ -22,10 +22,10 @@ h1 {
 #games {
     width: 90%; 
     display: grid; 
-    /* grid-template-columns: 1fr 1fr 1fr 1fr;  */
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr 1fr 1fr 1fr; 
+    /* grid-template-columns: 1fr;  */
     place-items: center;
-    grid-gap: 20px; 
+    grid-gap: 5px; 
 }
 
 .game {

@@ -1,7 +1,19 @@
 
 //HTML page environement variables
-var game = document.getElementById('game');
-var boxes = document.querySelectorAll('li');
+var game1 = document.querySelector('#game1');
+var boxes1 = game1.querySelectorAll('li');
+
+var game2 = document.querySelector('#game2');
+var boxes2 = game2.querySelectorAll('li');
+
+var game3 = document.querySelector('#game3');
+var boxes3 = game3.querySelectorAll('li');
+
+var game4 = document.querySelector('#game4');
+var boxes4 = game4.querySelectorAll('li');
+
+const games = [boxes1, boxes2, boxes3, boxes4]
+
 var turnDisplay = document.getElementById('whos-turn');
 var statusDisplay = document.getElementById('game-status');
 var gameMessages = document.getElementById('game-messages');
@@ -45,8 +57,10 @@ var init = async function() {
     joinGame.addEventListener('click',joinGameHandler, false);
     
     //events listeners for user to click on the board
-    for(var i = 0; i < 16; i++) {
-        boxes[i].addEventListener('click', clickHandler, false);
+    for(var i = 0; i < 4; i++) {
+        for(var j = 0; j < 4*4; j++) {
+            games[i][j].addEventListener('click', clickHandler, false);
+        }
     }
     renderInterval = setInterval(render, 1000);
     render();
@@ -96,15 +110,17 @@ var render = function(){
         TicTacToe.showBoard().then(function(res){
             for (var i = 0; i < 4; i++){
                 for (var j = 0; j < 4; j++){
-                    var state = res[0][i][j].words[0];
-                    if (state>0){
-                        var box_i = 4*i + j;
-                        if (state==1){
-                            boxes[box_i].className = 'x';
-                            boxes[box_i].innerHTML = 'x';
-                        } else{
-                            boxes[box_i].className = 'o';
-                            boxes[box_i].innerHTML = 'o';
+                    for (var k = 0; k < 4; k++){
+                        var state = res[0][i][j][k].words[0];
+                        if (state>0){
+                            var box_i = 4 * i + j;
+                            if (state==1){
+                                games[k][box_i].className = 'x';
+                                games[k][box_i].innerHTML = 'x';
+                            } else{
+                                games[k][box_i].className = 'o';
+                                games[k][box_i].innerHTML = 'o';
+                            }
                         }
                     }
                 }   
@@ -252,11 +268,12 @@ var clickHandler = function() {
         }
         var target_x = this.getAttribute('data-pos-x');
         var target_y = this.getAttribute('data-pos-y');
-        TicTacToe.validMove(target_x, target_y).then(function(res){
+        var target_z = this.getAttribute('data-pos-z');
+        TicTacToe.validMove(target_x, target_y, target_z).then(function(res){
             if (res[0]) {
                 TicTacToe.turn().then(function(res) {
                     if (res[0].words[0] == player) {
-                        TicTacToe.move(target_x, target_y).catch(function(err){
+                        TicTacToe.move(target_x, target_y, target_z).catch(function(err){
                             console.log('something went wrong ' + String(err));
                         }).then(function(res){
                             this.removeEventListener('click', clickHandler);
