@@ -36,7 +36,7 @@ contract TicTacToe {
      3    4    5
      6    7    8
      */
-    uint[3][3] private board;
+    uint[4][4] private board;
 
     /**
       Mapping
@@ -56,20 +56,6 @@ contract TicTacToe {
         players[0] = msg.sender;
         players[1] = opponent;
         
-
-        /**
-          Fill up lines mapping
-        */
-
-        // lines[0] = [[0,1,2],[0,3,6],[0,4,8]];
-        // lines[1] = [[0,1,2],[1,4,7]];
-        // lines[2] = [[0,1,2],[2,5,8],[2,4,6]];
-        // lines[3] = [[3,4,5],[0,3,6]];
-        // lines[4] = [[3,4,5],[1,4,7],[0,4,8],[2,4,6]];
-        // lines[5] = [[3,4,5],[2,5,8]];
-        // lines[6] = [[6,7,8],[0,3,6],[2,4,6]];
-        // lines[7] = [[6,7,8],[1,4,7]];
-        // lines[8] = [[6,7,8],[2,5,8],[0,4,8]];
     }
 
     modifier _hasJoined(address sender) {
@@ -100,9 +86,9 @@ contract TicTacToe {
       * @param b position b
       * @param c position c
       */    
-    function _threeInALine(uint a, uint b, uint c) private pure returns (bool){
+    function _fourInALine(uint a, uint b, uint c, uint d) private pure returns (bool){
         /*Please complete the code here.*/
-        return (a != 0 && a == b && a == c);
+        return (a != 0 && a == b && a == c && a == d);
 
     }
 
@@ -114,9 +100,9 @@ contract TicTacToe {
     }
 
 
-    function winnerInRow(uint[3][3] memory _board) private pure returns (uint){
-      for (uint8 x = 0; x < 3; x++) {
-        if (_threeInALine(_board[x][0], _board[x][1], _board[x][2])) {
+    function winnerInRow(uint[4][4] memory _board) private pure returns (uint){
+      for (uint8 x = 0; x < _board.length; x++) {
+        if (_fourInALine(_board[x][0], _board[x][1], _board[x][2], _board[x][3])) {
           return _board[x][0];
         }
       }
@@ -124,9 +110,9 @@ contract TicTacToe {
       return 0;
     }
 
-    function winnerInColumn(uint[3][3] memory _board) private pure returns (uint){
-      for (uint8 y = 0; y < 3; y++) {
-        if (_threeInALine(_board[0][y], _board[1][y], _board[2][y])) {
+    function winnerInColumn(uint[4][4] memory _board) private pure returns (uint){
+      for (uint8 y = 0; y < _board.length; y++) {
+        if (_fourInALine(_board[0][y], _board[1][y], _board[2][y], _board[3][y])) {
           return _board[0][y];
         }
       }
@@ -134,20 +120,20 @@ contract TicTacToe {
       return 0;
     }
 
-    function winnerInDiagonal(uint[3][3] memory _board) private pure returns (uint){
+    function winnerInDiagonal(uint[4][4] memory _board) private pure returns (uint){
       
-      if (_threeInALine(_board[0][0], _board[1][1], _board[2][2])) {
+      if (_fourInALine(_board[0][0], _board[1][1], _board[2][2], _board[3][3])) {
         return _board[0][0];
       }
       
-      if (_threeInALine(_board[0][2], _board[1][1], _board[2][0])) {
-        return _board[0][0];
+      if (_fourInALine(_board[0][3], _board[1][2], _board[2][1], _board[3][0])) {
+        return _board[0][3];
       }
 
       return 0;
     }
 
-    function fullBoard(uint[3][3] memory _board) private pure returns (bool){
+    function fullBoard(uint[4][4] memory _board) private pure returns (bool){
       
       for (uint j=0; j < _board.length; j++) {
         for (uint k=0; k < _board.length; k++) {
@@ -193,20 +179,6 @@ contract TicTacToe {
 
         return 0;
 
-        // for (uint j=0; j < lines[pos].length; j++) {
-        //   if (_threeInALine(lines[pos][j][0], lines[pos][j][1], lines[pos][j][2])){
-        //     return board[pos];
-        //   }
-        // }
-
-
-        // for (uint k=0; k < board.length; k++) {
-        //   if (board[k] == 0) {
-        //     return 0;
-        //   }
-        // }
-
-        // return 3;
     }
 
     /**
@@ -253,7 +225,7 @@ contract TicTacToe {
      */
     function validMove(uint pos_x, uint pos_y) public view returns (bool) {
       /*Please complete the code here.*/
-      return pos_x >= 0 && pos_x < 9 && pos_y >= 0 && pos_y < 9 && board[pos_x][pos_y] == 0;
+      return pos_x >= 0 && pos_x < 4 && pos_y >= 0 && pos_y < 4 && board[pos_x][pos_y] == 0;
 
     }
 
@@ -281,7 +253,7 @@ contract TicTacToe {
      * @dev show the current board
      * @return board
      */
-    function showBoard() public view returns (uint[3][3]) {
+    function showBoard() public view returns (uint[4][4]) {
       return board;
     }
 

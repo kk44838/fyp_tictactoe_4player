@@ -29,8 +29,8 @@ h1 {
 }
 
 .game {
-    width: 300px;
-    height: 300px;
+    width: 280px;
+    height: 280px;
     border: 1px solid #dadada;
     margin: 10px;
     padding: 0;
@@ -42,8 +42,8 @@ h1 {
     float: left;
     overflow: hidden;
     text-decoration:none;
-    width: 100px;
-    height: 100px;
+    width: 70px;
+    height: 70px;
     background: #f1f1f1;
     border: 1px solid #ccc;
     border-right: 1px solid #fff;
@@ -56,12 +56,12 @@ h1 {
 }
 
 .game > li.x {
-    font-size: 40px;
+    font-size: 35px;
     color: #ed4e6e
 }
 
 .game > li.o {
-    font-size: 40px;
+    font-size: 35px;
     color: #485b6e;
 }
 
@@ -70,8 +70,8 @@ h1 {
 }
 
 .game > li:active {
-    width: 100px;
-    height: 100px;
+    width: 70px;
+    height: 70px;
     border: 0;
 }
 

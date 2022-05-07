@@ -45,7 +45,7 @@ var init = async function() {
     joinGame.addEventListener('click',joinGameHandler, false);
     
     //events listeners for user to click on the board
-    for(var i = 0; i < 9; i++) {
+    for(var i = 0; i < 16; i++) {
         boxes[i].addEventListener('click', clickHandler, false);
     }
     renderInterval = setInterval(render, 1000);
@@ -94,11 +94,11 @@ var render = function(){
     //renders the board byt fetching the state of the board from the blockchain
     if (typeof TicTacToe != 'undefined'){
         TicTacToe.showBoard().then(function(res){
-            for (var i = 0; i < 3; i++){
-                for (var j = 0; j < 3; j++){
+            for (var i = 0; i < 4; i++){
+                for (var j = 0; j < 4; j++){
                     var state = res[0][i][j].words[0];
                     if (state>0){
-                        var box_i = 3*i + j;
+                        var box_i = 4*i + j;
                         if (state==1){
                             boxes[box_i].className = 'x';
                             boxes[box_i].innerHTML = 'x';
