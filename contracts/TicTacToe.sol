@@ -6,7 +6,7 @@ pragma solidity ^0.4.24;
  **/
 contract TicTacToe {
     address[2] public players;
-    address[2] public playersJoined;
+    // address[2] public playersJoined;
     
     /**
       Amount to bet
@@ -39,42 +39,38 @@ contract TicTacToe {
     uint[4][4][4] private board;
 
     /**
-      Mapping
+      Timeout
      */
-    // mapping(uint => uint[][]) public lines;
-    // uint[][] private tests;
+    // uint256 timeout = 30 minutes;
+    // uint256 nextTimeoutPhase;
 
     /**
       * @dev Deploy the contract to create a new game
       * @param opponent The address of player2
       **/
-    constructor(address opponent) public {
+    constructor(address opponent) public payable {
         require(msg.sender != opponent, "No self play.");
         // require(msg.value <= msg.sender.balance, "Player 1 insufficient balance.");
         // require(msg.value <= opponent.balance, "Player 2 insufficient balance.");
 
         players[0] = msg.sender;
         players[1] = opponent;
+        betAmount = msg.value;
         
     }
 
-    modifier _hasJoined(address sender) {
-      require((sender == players[0] && playersJoined[0] == address(0)) || (sender == players[1] && playersJoined[1] == address(0)), "Already Joined");
-      _;
-    }
+    // modifier _hasJoined(address sender) {
+    //   require((sender == players[0] && playersJoined[0] == address(0)) || (sender == players[1] && playersJoined[1] == address(0)), "Already Joined");
+    //   _;
+    // }
 
-    function join() external payable _hasJoined(msg.sender) {
-        
-        if (msg.sender == players[0]){
-          playersJoined[0] = msg.sender;
-          betAmount = msg.value;
-        }
+    function join() external payable {
 
-        if (msg.sender == players[1]) {
-          require(msg.value == betAmount, "Wrong bet amount.");
-          playersJoined[1] = msg.sender;
-          status = 0;
-        }
+      require(msg.sender == players[1], "You are not the opponent.");
+      require(status == 4, "Opponent already joined.");
+      require(msg.value == betAmount, "Wrong bet amount.");
+
+      status = 0;
         
     }
 
@@ -92,12 +88,12 @@ contract TicTacToe {
 
     }
 
-    modifier _allJoined() {
-      for (uint i=0; i < playersJoined.length; i++) {
-        require((players[0] != address(0) && playersJoined[0] == players[0]));
-      }
-      _;
-    }
+    // modifier _allJoined() {
+    //   for (uint i=0; i < playersJoined.length; i++) {
+    //     require((players[0] != address(0) && playersJoined[0] == players[0]));
+    //   }
+    //   _;
+    // }
 
 
     function winnerInRow() private view returns (uint){
@@ -276,12 +272,15 @@ contract TicTacToe {
      */
     modifier _checkStatus {
         /*Please complete the code here.*/
-        require(status == 0, "Game is Complete.");
+        require(status == 0, "Game is not in progess.");
         _;
         status = _getStatus();
-        if (status > 0 && status < 3 && !paidWinner) {
+
+        if (status == 3) {
+          draw();
+        } else if (status > 0 && status < 3 && !paidWinner) {
           paidWinner = true;
-          payWinner();
+          payWinner(status);
         }
     }
 
@@ -334,7 +333,7 @@ contract TicTacToe {
      * @param pos_x the position the player places at
      * @param pos_y the position the player places at
      */
-    function move(uint pos_x, uint pos_y, uint pos_z) public _allJoined _validMove(pos_x, pos_y, pos_z) _checkStatus _myTurn {
+    function move(uint pos_x, uint pos_y, uint pos_z) public _validMove(pos_x, pos_y, pos_z) _checkStatus _myTurn {
         board[pos_x][pos_y][pos_z] = turn;
     }
 
@@ -346,9 +345,13 @@ contract TicTacToe {
       return board;
     }
 
+    function draw() private {
+      players[0].transfer(betAmount);
+      players[1].transfer(betAmount);
+    }
 
-    function payWinner() private {
-      players[status - 1].transfer(betAmount + betAmount);
+    function payWinner(uint player) private {
+      players[player - 1].transfer(betAmount + betAmount);
     }
 }
 

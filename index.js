@@ -93,19 +93,17 @@ var checkWin = function(){
                         games[i][j].removeEventListener('click', clickHandler);
                     }
                 }
+
+                return true;
             } else if (win == 4){
                 document.querySelector('#game-messages').innerHTML = "Waiting for players...";
             }
         });
-        if (win>0 && win<4){
-            return true;
-        } else {
-            return false;
-        }
-    } else { 
-        return false;
     }
+
+    return false;
 }
+
 
 var render = function(){
 
@@ -159,8 +157,10 @@ var newGameHandler = function(){
         console.log("There seems to be an existing game going on already");
     } else{
         var opponentAddress = document.getElementById('opponentAdress').value
+        betAmount = document.getElementById('betAmount').value;
+
         console.log(opponentAddress)
-        TicTacToeContract.new(opponentAddress)
+        TicTacToeContract.new(opponentAddress, { from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")})
         .then(function(txHash) {
             var waitForTransaction = setInterval(function(){
                 eth.getTransactionReceipt(txHash, function(err, receipt){
@@ -168,53 +168,55 @@ var newGameHandler = function(){
                         clearInterval(waitForTransaction);
                         TicTacToe = TicTacToeContract.at(receipt.contractAddress);
                         //display the contract address to share with the opponent
-
-                        document.querySelector('#betAmountFieldStart').innerHTML = 
-                    "<input type=\"text\" id=\"betAmount\" placeholder=\"Place Your Bet\"></input><button id=\"start-game\" onclick=\"startGameHandler()\">Place Bet</button> <br><br>";
-                    }
-                })
-            }, 300);
-        
-        })
-        
-    }
-}
-
-var startGameHandler = async function(){
-
-    if (typeof TicTacToe != 'undefined'){
-        betAmount = document.getElementById('betAmount');
-        if (!betAmount) {
-            betAmount = 1;
-        } else {
-            betAmount = betAmount.value;
-        }
-        console.log(betAmount);
-        console.log(accounts[0])
-
-        TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")}).then(function(txHash) {
-            var waitForTransaction = setInterval(function(){
-                eth.getTransactionReceipt(txHash, function(err, receipt){
-                    if (receipt) {
-                        clearInterval(waitForTransaction);
-                        //display the contract address to share with the opponent
-
-                        document.querySelector('#betAmountFieldStart').innerHTML +=  
-                            "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
-                            + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
-                        document.querySelector('#player').innerHTML ="Player1"
+                        
+                        document.querySelector('#newGameAddress').innerHTML = "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
+                        + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
                         player = 1;
+                    // "<input type=\"text\" id=\"betAmount\" placeholder=\"Place Your Bet\"></input><button id=\"start-game\" onclick=\"startGameHandler()\">Place Bet</button> <br><br>";
                     }
                 })
             }, 300);
         
         })
-
-    } else {
-        console.log("There doesn't seem to be an existing game going on already");
+        
     }
-    
 }
+
+// var startGameHandler = async function(){
+
+//     if (typeof TicTacToe != 'undefined'){
+//         betAmount = document.getElementById('betAmount');
+//         if (!betAmount) {
+//             betAmount = 1;
+//         } else {
+//             betAmount = betAmount.value;
+//         }
+//         console.log(betAmount);
+//         console.log(accounts[0])
+
+//         TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")}).then(function(txHash) {
+//             var waitForTransaction = setInterval(function(){
+//                 eth.getTransactionReceipt(txHash, function(err, receipt){
+//                     if (receipt) {
+//                         clearInterval(waitForTransaction);
+//                         //display the contract address to share with the opponent
+
+//                         document.querySelector('#newGameAddress').innerHTML =  
+//                             "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
+//                             + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
+//                         document.querySelector('#player').innerHTML ="Player1"
+//                         player = 1;
+//                     }
+//                 })
+//             }, 300);
+        
+//         })
+
+//     } else {
+//         console.log("There doesn't seem to be an existing game going on already");
+//     }
+    
+// }
 
 var joinGameHandler = function(){
     //idem for joining a game
@@ -233,7 +235,7 @@ var joinGameHandler = function(){
 
 var joinGameConfirmHandler = function(){
     TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")}).then(function(res) {
-        document.querySelector('#betAmountFieldJoin').innerHTML = "Game of " + betAmount + " started."
+        document.querySelector('#betAmountFieldJoin').innerHTML = "Game of " + betAmount + " ETH stakes started."
         document.querySelector('#player').innerHTML = "Player2";
         player = 2;
     });
