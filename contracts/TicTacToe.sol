@@ -11,7 +11,7 @@ contract TicTacToe {
     /**
       Amount to bet
      */
-    uint256 public betAmount;
+    uint public betAmount;
 
     /**
      turn
@@ -29,7 +29,7 @@ contract TicTacToe {
      4 - Not started
      */
     uint public status = 4;
-    bool private paidWinner = false;
+    bool public paidWinner = false;
     /**
     board status
      0    1    2
