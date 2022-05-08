@@ -140,7 +140,7 @@ h1 {
     font-size: small;
 }
 
-#opponentAdress{
+.inputs{
     border: none;
     border-bottom: 2px solid red;
     background: #485b6e;

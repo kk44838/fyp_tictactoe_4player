@@ -129,11 +129,12 @@ var render = function(){
             }
         });
         checkWin();
+
         if (!gameOver){
             turnMessageHandler();
         } else {
             TicTacToe.paidWinner().then(function(res){
-                document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0].words[0];
+                document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0];
             });
         }
     }

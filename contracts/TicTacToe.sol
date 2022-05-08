@@ -41,8 +41,8 @@ contract TicTacToe {
     /**
       Timeout
      */
-    // uint256 timeout = 30 minutes;
-    // uint256 nextTimeoutPhase;
+    uint256 timeout = 30 seconds;
+    uint256 nextTimeoutPhase;
 
     /**
       * @dev Deploy the contract to create a new game
@@ -70,6 +70,7 @@ contract TicTacToe {
       require(status == 4, "Opponent already joined.");
       require(msg.value == betAmount, "Wrong bet amount.");
 
+      nextTimeoutPhase = (now + timeout);
       status = 0;
         
     }
@@ -266,6 +267,17 @@ contract TicTacToe {
 
     }
 
+    // /**
+    //  * @dev check and update the timeouts
+    //  */
+    // modifier _checkTimeout{
+    //     require(nextTimeoutPhase > now, "This game has timed out");
+    //     _;
+    //     nextTimeoutPhase = (now + timeout);
+    // }
+
+    
+
     /**
      * @dev ensure the game is still ongoing before a player moving
      * update the status of the game after a player moving
@@ -281,7 +293,10 @@ contract TicTacToe {
         } else if (status > 0 && status < 3 && !paidWinner) {
           paidWinner = true;
           payWinner(status);
+        } else if (nextTimeoutPhase < now && !paidWinner) {
+          unlockFundsAfterTimeout();
         }
+
     }
 
     /**
@@ -318,23 +333,23 @@ contract TicTacToe {
     }
 
     /**
-     * @dev ensure a move is valid
-     * @param pos_x the position the player places at
-     * @param pos_y the position the player places at
+     * @dev ensure a move is made before the timeout
      */
-    modifier _validMove(uint pos_x, uint pos_y, uint pos_z) {
+
+    modifier _checkTimeout() {
       /*Please complete the code here.*/
-      require (validMove(pos_x, pos_y, pos_z), "Move is invalid.");
+      require (nextTimeoutPhase > now, "Took too long to make move.");
       _;
-    }
+      nextTimeoutPhase = (now + timeout);
+    }    
 
     /**
      * @dev a player makes a move
      * @param pos_x the position the player places at
      * @param pos_y the position the player places at
      */
-    function move(uint pos_x, uint pos_y, uint pos_z) public _validMove(pos_x, pos_y, pos_z) _checkStatus _myTurn {
-        board[pos_x][pos_y][pos_z] = turn;
+    function move(uint pos_x, uint pos_y, uint pos_z) public _validMove(pos_x, pos_y, pos_z) _checkTimeout _checkStatus _myTurn {
+      board[pos_x][pos_y][pos_z] = turn;
     }
 
     /**
@@ -343,6 +358,18 @@ contract TicTacToe {
      */
     function showBoard() public view returns (uint[4][4][4]) {
       return board;
+    }
+
+    function unlockFundsAfterTimeout() private {
+        //Game must be timed out & still active
+        require(nextTimeoutPhase < now, "Game has not yet timed out");
+        require(status == 0, "Game has already been rendered inactive.");
+        require(!paidWinner, "Winner already paid.");
+
+        status = (turn % 2) + 1;
+        paidWinner = true;
+        payWinner((turn % 2) + 1);
+
     }
 
     function draw() private {
