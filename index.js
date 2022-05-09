@@ -106,7 +106,6 @@ var checkWin = function(){
                     timerStarted = true;
                     document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
                 }
-                timerHandler();
             }
         });
     }
@@ -142,6 +141,9 @@ var render = function(){
 
         if (!gameOver){
             turnMessageHandler();
+            if (timerStarted) {
+                timerHandler();
+            }
         } else {
             TicTacToe.paidWinner().then(function(res){
                 document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0];
@@ -210,42 +212,6 @@ var newGameHandler = function(){
         
     }
 }
-
-// var startGameHandler = async function(){
-
-//     if (typeof TicTacToe != 'undefined'){
-//         betAmount = document.getElementById('betAmount');
-//         if (!betAmount) {
-//             betAmount = 1;
-//         } else {
-//             betAmount = betAmount.value;
-//         }
-//         console.log(betAmount);
-//         console.log(accounts[0])
-
-//         TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")}).then(function(txHash) {
-//             var waitForTransaction = setInterval(function(){
-//                 eth.getTransactionReceipt(txHash, function(err, receipt){
-//                     if (receipt) {
-//                         clearInterval(waitForTransaction);
-//                         //display the contract address to share with the opponent
-
-//                         document.querySelector('#newGameAddress').innerHTML =  
-//                             "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
-//                             + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
-//                         document.querySelector('#player').innerHTML ="Player1"
-//                         player = 1;
-//                     }
-//                 })
-//             }, 300);
-        
-//         })
-
-//     } else {
-//         console.log("There doesn't seem to be an existing game going on already");
-//     }
-    
-// }
 
 var joinGameHandler = function(){
     //idem for joining a game

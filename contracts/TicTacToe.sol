@@ -94,7 +94,7 @@ contract TicTacToe {
         } 
       }
       
-      return 0;
+      return 4;
     }
 
     function winnerInColumn() private view returns (uint){
@@ -105,7 +105,7 @@ contract TicTacToe {
           }
         }
       }
-      return 0;
+      return 4;
     }
 
     function winnerInDiagonal() private view returns (uint){
@@ -119,7 +119,7 @@ contract TicTacToe {
           return board[0][3][z1];
         }
       }
-      return 0;
+      return 4;
     }
 
     function winnerInVertical() private view returns (uint){
@@ -132,7 +132,7 @@ contract TicTacToe {
         } 
       }
       
-      return 0;
+      return 4;
     }
 
     function winnerInVerticalRow() private view returns (uint){
@@ -146,7 +146,7 @@ contract TicTacToe {
           }
       }
       
-      return 0;
+      return 4;
     }
 
     function winnerInVerticalColumn() private view returns (uint){
@@ -160,7 +160,7 @@ contract TicTacToe {
           }
       }
       
-      return 0;
+      return 4;
     }
 
     function winnerInVerticalDiagonal() private view returns (uint){
@@ -180,7 +180,7 @@ contract TicTacToe {
         return board[0][3][3];
       }
       
-      return 0;
+      return 4;
     }
 
     function fullBoard() private view returns (bool){
@@ -251,7 +251,7 @@ contract TicTacToe {
           return 3;
         }
 
-        return 0;
+        return 4;
 
     }
 
@@ -269,7 +269,7 @@ contract TicTacToe {
 
         if (status == 3) {
           draw();
-        } else if (status < 3 && !paidWinner) {
+        } else if (status > 0 && status < 3 && !paidWinner) {
           paidWinner = true;
           payWinner(status);
         } 
@@ -289,7 +289,7 @@ contract TicTacToe {
      * @dev ensure it's a msg.sender's turn
      * update the turn after a move
      */
-    modifier _myTurn() {
+    modifier _myTurn {
       /*Please complete the code here.*/
       require(myTurn(), "Not your turn!");
       _;
@@ -315,7 +315,7 @@ contract TicTacToe {
 
     modifier _validMove(uint pos_x, uint pos_y, uint pos_z) {
       /*Please complete the code here.*/
-      require (validMove(pos_x, pos_y, pos_z), "Invalid Move.");
+      require(validMove(pos_x, pos_y, pos_z), "Invalid Move.");
       _;
     }    
 
@@ -323,9 +323,9 @@ contract TicTacToe {
      * @dev ensure a move is made before the timeout
      */
 
-    modifier _checkTimeout() {
+    modifier _checkTimeout {
       /*Please complete the code here.*/
-      require (nextTimeoutPhase > now, "Took too long to make move.");
+      require(nextTimeoutPhase > now, "Took too long to make move.");
       _;
       nextTimeoutPhase = (now + timeout);
     }    
