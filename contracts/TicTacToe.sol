@@ -41,7 +41,7 @@ contract TicTacToe {
     /**
       Timeout
      */
-    uint256 timeout = 30 seconds;
+    uint256 timeout = 1.5 minutes;
     uint256 nextTimeoutPhase;
 
     /**
