@@ -94,7 +94,7 @@ h1 {
     margin-top: 10px;
 }
 
-#new-game {
+.buttons {
     text-align: center;
         border: none;
         padding: 0.6em 1.2em;
@@ -113,19 +113,16 @@ h1 {
         background: #2c3e52;
 }
 
-#join-game {
-    text-align: center;
-        border: none;
-        padding: 0.6em 1.2em;
-        background: #ed4e6e;
-        color: #fff;
+#start-game {
+        padding: 0.6em 0.6em;
         font-size: 1em;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        cursor: pointer;
-        display: inline-block;
-        margin: 3px 2px;
+        margin: 2px 2px;
         border-radius: 2px;
+}
+
+#timeout {
+        padding: 0.6em 1.2em;
+        font-size: 0.7em;
 }
 
 #join-game:hover {

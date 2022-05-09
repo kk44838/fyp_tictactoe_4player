@@ -22,13 +22,13 @@ contract TicTacToe {
 
     /**
      status
-     0 - ongoing
+     0 - Not started
      1 - players[0] won
      2 - players[1] won
      3 - draw
-     4 - Not started
+     4 - Ongoing
      */
-    uint public status = 4;
+    uint public status = 0;
     bool public paidWinner = false;
     /**
     board status
@@ -59,19 +59,14 @@ contract TicTacToe {
         
     }
 
-    // modifier _hasJoined(address sender) {
-    //   require((sender == players[0] && playersJoined[0] == address(0)) || (sender == players[1] && playersJoined[1] == address(0)), "Already Joined");
-    //   _;
-    // }
-
     function join() external payable {
 
       require(msg.sender == players[1], "You are not the opponent.");
-      require(status == 4, "Opponent already joined.");
+      require(status == 0, "Opponent already joined.");
       require(msg.value == betAmount, "Wrong bet amount.");
 
       nextTimeoutPhase = (now + timeout);
-      status = 0;
+      status = 4;
         
     }
 
@@ -88,13 +83,6 @@ contract TicTacToe {
         return (a != 0 && a == b && a == c && a == d);
 
     }
-
-    // modifier _allJoined() {
-    //   for (uint i=0; i < playersJoined.length; i++) {
-    //     require((players[0] != address(0) && playersJoined[0] == players[0]));
-    //   }
-    //   _;
-    // }
 
 
     function winnerInRow() private view returns (uint){
@@ -219,43 +207,43 @@ contract TicTacToe {
 
         uint cur_status = winnerInRow();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
         cur_status = winnerInColumn();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
         cur_status = winnerInDiagonal();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
         cur_status = winnerInVertical();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
         cur_status = winnerInVerticalRow();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
         cur_status = winnerInVerticalColumn();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
         cur_status = winnerInVerticalDiagonal();
 
-        if (cur_status > 0) {
+        if (cur_status < 4) {
           return cur_status;
         }
 
@@ -267,15 +255,6 @@ contract TicTacToe {
 
     }
 
-    // /**
-    //  * @dev check and update the timeouts
-    //  */
-    // modifier _checkTimeout{
-    //     require(nextTimeoutPhase > now, "This game has timed out");
-    //     _;
-    //     nextTimeoutPhase = (now + timeout);
-    // }
-
     
 
     /**
@@ -284,18 +263,16 @@ contract TicTacToe {
      */
     modifier _checkStatus {
         /*Please complete the code here.*/
-        require(status == 0, "Game is not in progess.");
+        require(status == 4, "Game is not in progess.");
         _;
         status = _getStatus();
 
         if (status == 3) {
           draw();
-        } else if (status > 0 && status < 3 && !paidWinner) {
+        } else if (status < 3 && !paidWinner) {
           paidWinner = true;
           payWinner(status);
-        } else if (nextTimeoutPhase < now && !paidWinner) {
-          unlockFundsAfterTimeout();
-        }
+        } 
 
     }
 
@@ -333,6 +310,16 @@ contract TicTacToe {
     }
 
     /**
+     * @dev ensure a move is made is valid before it is made
+     */
+
+    modifier _validMove(uint pos_x, uint pos_y, uint pos_z) {
+      /*Please complete the code here.*/
+      require (validMove(pos_x, pos_y, pos_z), "Invalid Move.");
+      _;
+    }    
+
+    /**
      * @dev ensure a move is made before the timeout
      */
 
@@ -360,16 +347,16 @@ contract TicTacToe {
       return board;
     }
 
-    function unlockFundsAfterTimeout() private {
+    function unlockFundsAfterTimeout() public {
         //Game must be timed out & still active
         require(nextTimeoutPhase < now, "Game has not yet timed out");
-        require(status == 0, "Game has already been rendered inactive.");
+        require(status == 4, "Game has already been rendered inactive.");
         require(!paidWinner, "Winner already paid.");
+        require(players[(turn % 2)] == msg.sender, "Must be called by winner.");
 
         status = (turn % 2) + 1;
         paidWinner = true;
         payWinner((turn % 2) + 1);
-
     }
 
     function draw() private {

@@ -14,6 +14,7 @@ var boxes4 = game4.querySelectorAll('li');
 
 const games = [boxes1, boxes2, boxes3, boxes4]
 
+var timerDisplay = document.getElementById('timer');
 var turnDisplay = document.getElementById('whos-turn');
 var statusDisplay = document.getElementById('game-status');
 var gameMessages = document.getElementById('game-messages');
@@ -25,6 +26,8 @@ var gameOver = false;
 var accounts;
 var betAmount;
 
+var timerStarted = false;
+var startTime;
 
 if (typeof web3 !== 'undefined') {
     web3 = new Web3(web3.currentProvider);
@@ -95,8 +98,15 @@ var checkWin = function(){
                 }
 
                 return true;
-            } else if (win == 4){
+            } else if (win == 0){
                 document.querySelector('#game-messages').innerHTML = "Waiting for players...";
+            } else if (win == 4) {
+                if (!timerStarted) {
+                    start = Date.now();
+                    timerStarted = true;
+                    document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
+                }
+                timerHandler();
             }
         });
     }
@@ -137,6 +147,24 @@ var render = function(){
                 document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0];
             });
         }
+    }
+}
+
+var timerHandler = function(){
+    timerDisplay.innerHTML = Math.floor((Date.now() - start)/ 1000);
+}
+
+var timeoutHandler = function(){
+    if (typeof TicTacToe != 'undefined'){
+        if (checkWin()){
+            return;
+        }
+
+        TicTacToe.unlockFundsAfterTimeout().then(function(res){
+            document.querySelector('#timeout-messages').innerHTML = "Opponent exceeded timeout."
+        }).catch(function(err) {
+            document.querySelector('#timeout-messages').innerHTML = "Opponent has not exceeded timeout."
+        });
     }
 }
 
@@ -227,9 +255,13 @@ var joinGameHandler = function(){
     TicTacToe.betAmount().then(function(res) {
         console.log(res)
         betAmount = web3.utils.fromWei(res[0].toString(), 'ether');
-
-        document.querySelector('#betAmountFieldJoin').innerHTML += 
-            "Bet Amount of " + betAmount + " requried to join game. <button id=\"start-game\" onclick=\"joinGameConfirmHandler()\">Confirm</button> <br><br>"
+        if (betAmount == 0) {
+            document.querySelector('#betAmountFieldJoin').innerHTML = "Try Again..."
+        } else {
+            document.querySelector('#betAmountFieldJoin').innerHTML = 
+            "Bet Amount of " + betAmount + " requried to join game. <button class=\"buttons\" id=\"start-game\" onclick=\"joinGameConfirmHandler()\">Confirm</button> <br><br>"
+        }
+        
     });
     
 }
@@ -239,6 +271,7 @@ var joinGameConfirmHandler = function(){
         document.querySelector('#betAmountFieldJoin').innerHTML = "Game of " + betAmount + " ETH stakes started."
         document.querySelector('#player').innerHTML = "Player2";
         player = 2;
+        startTime = Date.now()
     });
     
 }

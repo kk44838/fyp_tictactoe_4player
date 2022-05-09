@@ -24,12 +24,12 @@
 
         <input type="text" class="inputs" id="opponentAdress" placeholder="Opponent Address"></input>
         <input type="text" class="inputs" id="betAmount" placeholder="Place Your Bet"></input>
-        <button id="new-game">New Game</button> <br><br>
+        <button class="buttons" id="new-game">New Game</button> <br><br>
         <div id="newGameAddress"></div>        
 
         Or to join an existing game enter the contract address below: <br><br>
         <input type="text" id="contract-ID-tojoin" placeholder="Contract Address"></input>
-        <button id="join-game">Join Game</button>
+        <button class="buttons" id="join-game">Join Game</button>
         <div id="betAmountFieldJoin"></div>
 
     
@@ -129,6 +129,9 @@
                 </ul>
             </span>
             <!-- Game Messages -->
+            <div id="timer"></div>
+            <div id="timeout"></div>
+            <div id="timeout-messages"></div>
             <div id="game-messages"></div>
             <div id="winner-paid"></div>
             
