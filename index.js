@@ -79,7 +79,7 @@ var checkWin = function(){
             win = res[0].words[0];
             console.log(win)
             var displayResult;
-            statusDisplay.innerHTML = "Status: " + win
+            // statusDisplay.innerHTML = "Status: " + win
             if (win>0 && win<4){
                 if (win==3){
                     displayResult = "Draw ! game is over";
@@ -101,10 +101,11 @@ var checkWin = function(){
             } else if (win == 0){
                 document.querySelector('#game-messages').innerHTML = "Waiting for players...";
             } else if (win == 4) {
+                document.querySelector('#game-messages').innerHTML = "Game in progress..."
                 if (!timerStarted) {
                     start = Date.now();
                     timerStarted = true;
-                    document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
+                    // document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeoutOn\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
                 }
             }
         });
@@ -172,11 +173,12 @@ var timeoutHandler = function(){
 
 var turnMessageHandler = function(){
     TicTacToe.turn().then(function(res){
-        turnDisplay.innerHTML = "Player Turn: " + res[0].words[0]
         if (res[0].words[0] == player){
-            document.querySelector('#game-messages').innerHTML = "Your turn !";
+            turnDisplay.innerHTML = "Your turn Player " + res[0].words[0] + "!";
+            document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
         } else {
-            document.querySelector('#game-messages').innerHTML = "Not your turn !";
+            turnDisplay.innerHTML = "Not your turn! It's Player " + res[0].words[0] + "'s turn!";
+            document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler() disabled>Claim Opponent Timeout</button>"
         }
     });
 }
@@ -203,7 +205,7 @@ var newGameHandler = function(){
                         document.querySelector('#newGameAddress').innerHTML = "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
                         + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
                         player = 1;
-                    // "<input type=\"text\" id=\"betAmount\" placeholder=\"Place Your Bet\"></input><button id=\"start-game\" onclick=\"startGameHandler()\">Place Bet</button> <br><br>";
+                        document.querySelector('#player').innerHTML = "Player 1";
                     }
                 })
             }, 300);
@@ -235,7 +237,7 @@ var joinGameHandler = function(){
 var joinGameConfirmHandler = function(){
     TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")}).then(function(res) {
         document.querySelector('#betAmountFieldJoin').innerHTML = "Game of " + betAmount + " ETH stakes started."
-        document.querySelector('#player').innerHTML = "Player2";
+        document.querySelector('#player').innerHTML = "Player 2";
         player = 2;
         startTime = Date.now()
     });

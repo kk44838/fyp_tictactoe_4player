@@ -109,7 +109,7 @@ h1 {
         border-radius: 2px;
 }
 
-#new-game:hover {
+.buttons:hover {
         background: #2c3e52;
 }
 
@@ -121,12 +121,12 @@ h1 {
 }
 
 #timeout {
-        padding: 0.6em 1.2em;
-        font-size: 0.7em;
+    padding: 0.6em 1.2em;
+    font-size: 0.7em;
 }
 
-#join-game:hover {
-        background: #2c3e52;
+.buttons:disabled {
+    background: #996772;
 }
 
 #contract-ID-tojoin{
