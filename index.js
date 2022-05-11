@@ -22,6 +22,7 @@ var newGame = document.getElementById('new-game');
 var joinGame = document.getElementById('join-game');
 // var startGame;
 var player;
+var team;
 var gameOver = false;
 var accounts;
 var betAmount;
@@ -84,9 +85,9 @@ var checkWin = function(){
                 if (win==3){
                     displayResult = "Draw ! game is over";
                 } else if (win == 2){
-                    displayResult = "Player 2 wins ! game is over";
+                    displayResult = "Team 2 wins ! game is over";
                 } else if (win == 1) {
-                    displayResult = "Player 1 wins ! game is over";
+                    displayResult = "Team 1 wins ! game is over";
                 }
                 gameOver = true;
                 document.querySelector('#game-messages').innerHTML = displayResult;
@@ -146,9 +147,7 @@ var render = function(){
                 timerHandler();
             }
         } else {
-            TicTacToe.paidWinner().then(function(res){
-                document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0];
-            });
+            endGameHandler();
         }
     }
 }
@@ -175,10 +174,10 @@ var turnMessageHandler = function(){
     TicTacToe.turn().then(function(res){
         if (res[0].words[0] == player){
             turnDisplay.innerHTML = "Your turn Player " + res[0].words[0] + "!";
-            document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
+            document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\" disabled>Claim Opponent Timeout</button>"
         } else {
             turnDisplay.innerHTML = "Not your turn! It's Player " + res[0].words[0] + "'s turn!";
-            document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler() disabled>Claim Opponent Timeout</button>"
+            document.querySelector('#timeout').innerHTML = "<button class=\"buttons\" id=\"timeout\" onclick=\"timeoutHandler()\">Claim Opponent Timeout</button>"
         }
     });
 }
@@ -189,11 +188,13 @@ var newGameHandler = function(){
     if (typeof TicTacToe != 'undefined'){
         console.log("There seems to be an existing game going on already");
     } else{
-        var opponentAddress = document.getElementById('opponentAdress').value
-        betAmount = document.getElementById('betAmount').value;
+        var teammateAddress = document.getElementById('teammate-address').value
+        var opponentAddress1 = document.getElementById('opponent-address-1').value
+        var opponentAddress2 = document.getElementById('opponent-address-2').value
+        betAmount = document.getElementById('bet-amount').value;
 
-        console.log(opponentAddress)
-        TicTacToeContract.new(opponentAddress, { from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")})
+        console.log(teammateAddress, opponentAddress1, opponentAddress2)
+        TicTacToeContract.new(teammateAddress, opponentAddress1, opponentAddress2, { from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")})
         .then(function(txHash) {
             var waitForTransaction = setInterval(function(){
                 eth.getTransactionReceipt(txHash, function(err, receipt){
@@ -202,10 +203,11 @@ var newGameHandler = function(){
                         TicTacToe = TicTacToeContract.at(receipt.contractAddress);
                         //display the contract address to share with the opponent
                         
-                        document.querySelector('#newGameAddress').innerHTML = "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
+                        document.querySelector('#new-game-address').innerHTML = "BET AMOUNT OF " + betAmount + " PLACED <br><br>" 
                         + "Share the contract address with your opponnent: " + String(TicTacToe.address) + "<br><br>";
                         player = 1;
-                        document.querySelector('#player').innerHTML = "Player 1";
+                        team = 1;
+                        document.querySelector('#player').innerHTML = "Player 1 (TEAM 1)";
                     }
                 })
             }, 300);
@@ -224,9 +226,9 @@ var joinGameHandler = function(){
         console.log(res)
         betAmount = web3.utils.fromWei(res[0].toString(), 'ether');
         if (betAmount == 0) {
-            document.querySelector('#betAmountFieldJoin').innerHTML = "Try Again..."
+            document.querySelector('#bet-amount-field-join').innerHTML = "Try Again..."
         } else {
-            document.querySelector('#betAmountFieldJoin').innerHTML = 
+            document.querySelector('#bet-amount-field-join').innerHTML = 
             "Bet Amount of " + betAmount + " requried to join game. <button class=\"buttons\" id=\"start-game\" onclick=\"joinGameConfirmHandler()\">Confirm</button> <br><br>"
         }
         
@@ -236,12 +238,24 @@ var joinGameHandler = function(){
 
 var joinGameConfirmHandler = function(){
     TicTacToe.join({ from: accounts[0], gas: '3000000',  value: web3.utils.toWei(betAmount.toString(), "ether")}).then(function(res) {
-        document.querySelector('#betAmountFieldJoin').innerHTML = "Game of " + betAmount + " ETH stakes started."
-        document.querySelector('#player').innerHTML = "Player 2";
-        player = 2;
+        TicTacToe.walletToPlayer(accounts[0]).then(function(res) {
+            player = res[0]
+            team = (player + 1) % 2 + 1
+            document.querySelector('#player').innerHTML = "Player " + player + " (TEAM " + team + ")";
+        });
+        document.querySelector('#bet-amount-field-join').innerHTML = "Game of " + betAmount + " ETH stakes joined."
+
         startTime = Date.now()
     });
     
+}
+
+var endGameHandler = function(){
+    document.querySelector('#timeout').innerHTML = ""
+    turnDisplay.innerHTML = ""
+    // TicTacToe.paidWinner().then(function(res){
+    //     document.querySelector('#winner-paid').innerHTML = "Winner paid: " + res[0];
+    // });
 }
 
 var clickHandler = function() {
