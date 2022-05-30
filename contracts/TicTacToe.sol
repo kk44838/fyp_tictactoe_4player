@@ -29,6 +29,7 @@ contract TicTacToe {
      2 - players[1] and players[3] won
      3 - draw
      4 - Ongoing
+     5 - Failed to Start
      */
     uint public status = 0;
     bool public paidWinner = false;
@@ -39,6 +40,12 @@ contract TicTacToe {
      6    7    8
      */
     uint[4][4][4] private board;
+
+    /**
+      Join Game Timeout
+     */
+    uint256 joinTimeout = 5 minutes;
+    uint256 joinDeadline;
 
     /**
       Timeout
@@ -72,6 +79,8 @@ contract TicTacToe {
         walletToPlayer[opponent2] = 4;
 
         playersJoined[0] = betAmount;
+
+        joinDeadline = (now + joinTimeout);
     }
 
     function allJoined() public view returns (bool) {
@@ -88,6 +97,7 @@ contract TicTacToe {
       require(playerI > 0, "You are not an opponent.");
       require(playersJoined[playerI] == 0, "Opponent already joined.");
       require(msg.value == betAmount, "Wrong bet amount.");
+      require(joinDeadline > now, "Game join timeout.");
       
       playersJoined[playerI] = betAmount;
 
@@ -113,8 +123,8 @@ contract TicTacToe {
 
 
     function winnerInRow() private view returns (uint){
-      for (uint8 i = 0; i < board.length; i++) {
-        for (uint8 j = 0; j < board.length; j++) {
+      for (uint i = 0; i < board.length; i++) {
+        for (uint j = 0; j < board.length; j++) {
           if (_fourInALine(board[j][0][i], board[j][1][i], board[j][2][i], board[j][3][i])) {
             return board[j][0][i];
           }
@@ -125,8 +135,8 @@ contract TicTacToe {
     }
 
     function winnerInColumn() private view returns (uint){
-      for (uint8 i = 0; i < board.length; i++) {
-        for (uint8 j = 0; j < board.length; j++) {
+      for (uint i = 0; i < board.length; i++) {
+        for (uint j = 0; j < board.length; j++) {
           if (_fourInALine(board[0][j][i], board[1][j][i], board[2][j][i], board[3][j][i])) {
             return board[0][j][i];
           }
@@ -137,7 +147,7 @@ contract TicTacToe {
 
     function winnerInDiagonal() private view returns (uint){
       
-      for (uint8 i = 0; i < board.length; i++) {
+      for (uint i = 0; i < board.length; i++) {
         if (_fourInALine(board[0][0][i], board[1][1][i], board[2][2][i], board[3][3][i])) {
           return board[0][0][i];
         }
@@ -150,8 +160,8 @@ contract TicTacToe {
     }
 
     function winnerInVertical() private view returns (uint){
-      for (uint8 i = 0; i < board.length; i++) {
-        for (uint8 j = 0; j < board.length; j++) {
+      for (uint i = 0; i < board.length; i++) {
+        for (uint j = 0; j < board.length; j++) {
           if (_fourInALine(board[i][j][0], board[i][j][1], board[i][j][2], board[i][j][3])) {
             return board[i][j][0];
           
@@ -163,7 +173,7 @@ contract TicTacToe {
     }
 
     function winnerInVerticalRow() private view returns (uint){
-      for (uint8 i = 0; i < board.length; i++) {
+      for (uint i = 0; i < board.length; i++) {
           if (_fourInALine(board[i][0][0], board[i][1][1], board[i][2][2], board[i][3][3])) {
             return board[i][0][0];
           }
@@ -177,7 +187,7 @@ contract TicTacToe {
     }
 
     function winnerInVerticalColumn() private view returns (uint){
-      for (uint8 i = 0; i < board.length; i++) {
+      for (uint i = 0; i < board.length; i++) {
           if (_fourInALine(board[0][i][0], board[1][i][1], board[2][i][2], board[3][i][3])) {
             return board[i][0][0];
           }
@@ -374,6 +384,18 @@ contract TicTacToe {
       return board;
     }
 
+    function unlockFundsAfterJoinTimeout() public {
+        //Game must be timed out & still active
+        require(joinDeadline < now, "Game has not yet timed out");
+        require(status == 0, "Game has Started.");
+        require(!paidWinner, "Winner already paid.");
+        // require(, "Must be called by winner.");
+
+        status = 5;
+        paidWinner = true;
+        returnFunds();
+    }
+
     function unlockFundsAfterTimeout() public {
         //Game must be timed out & still active
         require(nextTimeoutPhase < now, "Game has not yet timed out");
@@ -402,6 +424,18 @@ contract TicTacToe {
         players[3].transfer(betAmount + betAmount);
       }
       
+    }
+
+    function returnFunds() private {
+      for (uint i=0; i < playersJoined.length; i++) {
+        if (playersJoined[i] > 0) {
+          uint bet = playersJoined[i];
+          playersJoined[i] = 0;
+
+          players[i].transfer(bet);
+        }
+      }
+
     }
 }
 
