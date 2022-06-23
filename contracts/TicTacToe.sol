@@ -5,9 +5,30 @@ pragma solidity ^0.4.24;
  * @title TicTacToe contract
  **/
 contract TicTacToe {
+    uint constant GAME_NOT_STARTED = 0;
+    uint constant GAME_TEAM_1_WON = 1;
+    uint constant GAME_TEAM_2_WON = 2;
+    uint constant GAME_DRAW = 3;
+    uint constant GAME_STARTED = 4;
+    uint constant GAME_CANCELLED = 5;
+
+
+    /**
+      Players in the game
+     */
     address[4] public players;
+
+    
+    /**
+      Bet amounts of players that have joined the game
+     */
     uint[4] public playersJoined;
+
+    /**
+      Maps player address to the player number
+     */
     mapping(address => uint) public walletToPlayer;
+
     /**
       Amount to bet
      */
@@ -31,13 +52,15 @@ contract TicTacToe {
      4 - Ongoing
      5 - Failed to Start
      */
-    uint public status = 0;
+
+    uint public status = GAME_NOT_STARTED;
+
+    /**
+      Winner has been paid
+     */
     bool public paidWinner = false;
     /**
-    board status
-     0    1    2
-     3    4    5
-     6    7    8
+      A 4x4x4 board
      */
     uint[4][4][4] private board;
 
@@ -63,8 +86,6 @@ contract TicTacToe {
         require(msg.sender != opponent1 && msg.sender != opponent2, "No self play.");
         require(teammate != opponent1 && teammate != opponent2 , "No self play.");
         require(msg.value > 0, "Bet too small");
-        // require(msg.value <= msg.sender.balance, "Player 1 insufficient balance.");
-        // require(msg.value <= opponent.balance, "Player 2 insufficient balance.");
 
         betAmount = msg.value;
 
@@ -83,6 +104,10 @@ contract TicTacToe {
         joinDeadline = (now + joinTimeout);
     }
 
+    /**
+      * @dev Checks all players have joined the game
+      * @return true if all players joined otherwise false
+      **/
     function allJoined() public view returns (bool) {
       for (uint i=0; i < players.length; i++) {
         if (playersJoined[i] == 0) {
@@ -92,6 +117,11 @@ contract TicTacToe {
       return true;
     }
 
+
+    /**
+      * @dev Join the game
+      * The game starts upon all players joining
+      **/
     function join() external payable {
       uint playerI = walletToPlayer[msg.sender] - 1;
       require(playerI > 0, "You are not an opponent.");
@@ -103,25 +133,29 @@ contract TicTacToe {
 
       if (allJoined()) {
         nextTimeoutPhase = (now + timeout);
-        status = 4;
+        status = GAME_STARTED;
       }
     }
 
 
     /**
-      * @dev Check a, b, c in a line are the same
-      * _threeInALine doesn't check if a, b, c are in a line
+      * @dev Check a, b, c, d in a line are the same
+      * _fourInALine doesn't check if a, b, c, d are in a line
       * @param a position a
       * @param b position b
       * @param c position c
+      * @param d position d
       */    
     function _fourInALine(uint a, uint b, uint c, uint d) private pure returns (bool){
-        /*Please complete the code here.*/
+        
         return (a != 0 && a == b && a == c && a == d);
 
     }
 
-
+    /**
+      * @dev Checks if there are four in a line in one of the rows
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInRow() private view returns (uint){
       for (uint i = 0; i < board.length; i++) {
         for (uint j = 0; j < board.length; j++) {
@@ -131,9 +165,13 @@ contract TicTacToe {
         } 
       }
       
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if there are four in a line in one of the columns
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInColumn() private view returns (uint){
       for (uint i = 0; i < board.length; i++) {
         for (uint j = 0; j < board.length; j++) {
@@ -142,9 +180,13 @@ contract TicTacToe {
           }
         }
       }
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if there are four in a line in one of the diagonals
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInDiagonal() private view returns (uint){
       
       for (uint i = 0; i < board.length; i++) {
@@ -156,9 +198,13 @@ contract TicTacToe {
           return board[0][3][i];
         }
       }
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if there are four in a line in one of the vertical lines
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInVertical() private view returns (uint){
       for (uint i = 0; i < board.length; i++) {
         for (uint j = 0; j < board.length; j++) {
@@ -169,9 +215,13 @@ contract TicTacToe {
         } 
       }
       
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if there are four in a line in one of the vertical rows
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInVerticalRow() private view returns (uint){
       for (uint i = 0; i < board.length; i++) {
           if (_fourInALine(board[i][0][0], board[i][1][1], board[i][2][2], board[i][3][3])) {
@@ -183,9 +233,13 @@ contract TicTacToe {
           }
       }
       
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if there are four in a line in one of the vertical columns
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInVerticalColumn() private view returns (uint){
       for (uint i = 0; i < board.length; i++) {
           if (_fourInALine(board[0][i][0], board[1][i][1], board[2][i][2], board[3][i][3])) {
@@ -197,9 +251,13 @@ contract TicTacToe {
           }
       }
       
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if there are four in a line in one of the vertical diagonals
+      * @return player number of winner four in a line, otherwise return game status
+      */  
     function winnerInVerticalDiagonal() private view returns (uint){
       if (_fourInALine(board[0][0][0], board[1][1][1], board[2][2][2], board[3][3][3])) {
         return board[0][0][0];
@@ -217,9 +275,13 @@ contract TicTacToe {
         return board[0][3][3];
       }
       
-      return 4;
+      return GAME_STARTED;
     }
 
+    /**
+      * @dev Checks if the board is full
+      * @return true if the board is full otherwise false
+      */  
     function fullBoard() private view returns (bool){
       
       for (uint i=0; i < board.length; i++) {
@@ -240,73 +302,73 @@ contract TicTacToe {
      * @return the status of the game
      */
     function _getStatus() private view returns (uint) {
-        /*Please complete the code here.*/
+        
 
         uint cur_status = winnerInRow();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         cur_status = winnerInColumn();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         cur_status = winnerInDiagonal();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         cur_status = winnerInVertical();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         cur_status = winnerInVerticalRow();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         cur_status = winnerInVerticalColumn();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         cur_status = winnerInVerticalDiagonal();
 
-        if (cur_status < 4) {
+        if (cur_status < GAME_STARTED) {
           return cur_status;
         }
 
         if (fullBoard()) {
-          return 3;
+          return GAME_DRAW;
         }
 
-        return 4;
+        return GAME_STARTED;
 
     }
 
     
 
     /**
-     * @dev ensure the game is still ongoing before a player moving
-     * update the status of the game after a player moving
+     * @dev ensure the game is still ongoing before a player move
+     * update game status after a player move
      */
     modifier _checkStatus {
-        /*Please complete the code here.*/
-        require(status == 4, "Game is not in progess.");
+        
+        require(status == GAME_STARTED, "Game is not in progess.");
         _;
         status = _getStatus();
 
-        if (status == 3) {
+        if (status == GAME_DRAW) {
           draw();
-        } else if (status > 0 && status < 3 && !paidWinner) {
+        } else if (status > GAME_NOT_STARTED && status < GAME_DRAW && !paidWinner) {
           paidWinner = true;
           payWinner(status);
         } 
@@ -318,7 +380,7 @@ contract TicTacToe {
      * @return true if it's msg.sender's turn otherwise false
      */
     function myTurn() public view returns (bool) {
-       /*Please complete the code here.*/
+       
        return msg.sender == players[turn-1];
     }
 
@@ -327,7 +389,7 @@ contract TicTacToe {
      * update the turn after a move
      */
     modifier _myTurn {
-      /*Please complete the code here.*/
+      
       require(myTurn(), "Not your turn!");
       _;
       turn = (turn % 4) + 1;
@@ -335,33 +397,37 @@ contract TicTacToe {
     }
 
     /**
-     * @dev check a move is valid
-     * @param pos_x the position the player places at
-     * @param pos_y the position the player places at
-     * @return true if valid otherwise false
+     * @dev check player move is valid
+     * @param pos_x the x position the player places at
+     * @param pos_y the y position the player places at
+     * @param pos_z the z position the player places at
+     * @return true if valid player move otherwise false
      */
     function validMove(uint pos_x, uint pos_y, uint pos_z) public view returns (bool) {
-      /*Please complete the code here.*/
+      
       return pos_x >= 0 && pos_x < 4 && pos_y >= 0 && pos_y < 4 && pos_z >= 0 && pos_z < 4 && board[pos_x][pos_y][pos_z] == 0;
 
     }
 
     /**
-     * @dev ensure a move is made is valid before it is made
+     * @dev ensure player move is valid before move is made
+     * @param pos_x the x position the player places at
+     * @param pos_y the y position the player places at
+     * @param pos_z the z position the player places at
      */
-
     modifier _validMove(uint pos_x, uint pos_y, uint pos_z) {
-      /*Please complete the code here.*/
+      
       require(validMove(pos_x, pos_y, pos_z), "Invalid Move.");
       _;
     }    
 
     /**
      * @dev ensure a move is made before the timeout
+     * update move timeout after move is made
      */
 
     modifier _checkTimeout {
-      /*Please complete the code here.*/
+      
       require(nextTimeoutPhase > now, "Took too long to make move.");
       _;
       nextTimeoutPhase = (now + timeout);
@@ -369,21 +435,26 @@ contract TicTacToe {
 
     /**
      * @dev a player makes a move
-     * @param pos_x the position the player places at
-     * @param pos_y the position the player places at
+     * @param pos_x the x position the player places at
+     * @param pos_y the y position the player places at
+     * @param pos_z the z position the player places at
      */
     function move(uint pos_x, uint pos_y, uint pos_z) public _validMove(pos_x, pos_y, pos_z) _checkTimeout _checkStatus _myTurn {
       board[pos_x][pos_y][pos_z] = (turn - 1) % 2 + 1;
     }
 
     /**
-     * @dev show the current board
+     * @dev show the current board state
      * @return board
      */
     function showBoard() public view returns (uint[4][4][4]) {
       return board;
     }
 
+
+    /**
+     * @dev returns bets to respective players if not all players join before the timeout
+     */
     function unlockFundsAfterJoinTimeout() public {
         //Game must be timed out & still active
         require(joinDeadline < now, "Game has not yet timed out");
@@ -391,15 +462,18 @@ contract TicTacToe {
         require(!paidWinner, "Winner already paid.");
         // require(, "Must be called by winner.");
 
-        status = 5;
+        status = GAME_CANCELLED;
         paidWinner = true;
         returnFunds();
     }
 
+    /**
+     * @dev awards bets to opposing team of a player that has timed out
+     */
     function unlockFundsAfterTimeout() public {
         //Game must be timed out & still active
         require(nextTimeoutPhase < now, "Game has not yet timed out");
-        require(status == 4, "Game has already been rendered inactive.");
+        require(status == GAME_STARTED, "Game has already been rendered inactive.");
         require(!paidWinner, "Winner already paid.");
         require(players[(turn % 2)] == msg.sender || players[(turn % 2) + 2] == msg.sender, "Must be called by winner.");
 
@@ -408,6 +482,9 @@ contract TicTacToe {
         payWinner(status);
     }
 
+    /**
+     * @dev return funds to respective owners
+     */
     function draw() private {
       players[0].transfer(betAmount);
       players[1].transfer(betAmount);
@@ -415,6 +492,9 @@ contract TicTacToe {
       players[3].transfer(betAmount);
     }
 
+    /**
+     * @dev award winners with winnings
+     */
     function payWinner(uint team) private {
       if (team == 1) {
         players[0].transfer(betAmount + betAmount);
@@ -423,9 +503,11 @@ contract TicTacToe {
         players[1].transfer(betAmount + betAmount);
         players[3].transfer(betAmount + betAmount);
       }
-      
     }
 
+    /**
+     * @dev returns funds to players that have joined
+     */
     function returnFunds() private {
       for (uint i=0; i < playersJoined.length; i++) {
         if (playersJoined[i] > 0) {
